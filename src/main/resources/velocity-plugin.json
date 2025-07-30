@@ -1,0 +1,7 @@
+{
+  "id": "tesseractvelocity",
+  "name": "TesseractVelocity",
+  "version": "1.0.0",
+  "main": "onl.tesseract.tesseractVelocity.TesseractVelocity",
+  "authors": ["Tesseract","aikiboo"]
+}

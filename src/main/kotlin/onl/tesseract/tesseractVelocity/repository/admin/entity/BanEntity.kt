@@ -5,6 +5,8 @@ package onl.tesseract.tesseractVelocity.repository.admin.entity
 import jakarta.persistence.*
 import onl.tesseract.tesseractVelocity.domain.admin.Ban
 import org.hibernate.annotations.ColumnDefault
+import org.hibernate.annotations.JdbcTypeCode
+import java.sql.Types
 import kotlin.time.ExperimentalTime
 
 @Entity
@@ -15,7 +17,8 @@ data class BanEntity(
     @Column(name = "ban_id", nullable = false)
     var id: Int? = null,
 
-    @Column(name = "UUID", length = 100)
+    @Column(name = "UUID", length = 36, columnDefinition = "VARCHAR(36)")
+    @JdbcTypeCode(Types.VARCHAR)
     var uuid: String? = null,
 
     @Column(name = "ban_ip", length = 50)
