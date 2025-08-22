@@ -4,6 +4,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import onl.tesseract.tesseractVelocity.domain.admin.Mute
 import org.hibernate.annotations.ColumnDefault
 import java.time.Instant
 
@@ -48,4 +49,36 @@ data class MuteEntity(
 
     @Column(name = "mute_unmutereason", length = 100)
     var muteUnmutereason: String? = null,
-) 
+) {
+    fun toModel(): Mute? {
+        return Mute(
+            id,
+            uuid,
+            muteIp,
+            muteStaff,
+            muteReason,
+            muteServer = if (this.muteServer == "(global)") null else this.muteServer,
+            muteBegin,
+            muteEnd,
+            muteState,
+            muteUnmutedate,
+            muteUnmutestaff,
+            muteUnmutereason
+        )
+    }
+}
+
+fun Mute.toEntity(): MuteEntity = MuteEntity(
+    id = this.id,
+    uuid = this.uuid,
+    muteIp = this.muteIp,
+    muteStaff = this.muteStaff,
+    muteReason = this.muteReason,
+    muteServer = this.muteServer ?: "(global)",
+    muteBegin = this.muteBegin,
+    muteEnd = this.muteEnd,
+    muteState = this.muteState,
+    muteUnmutedate = this.muteUnmutedate,
+    muteUnmutestaff = this.muteUnmutestaff,
+    muteUnmutereason = this.muteUnmutereason
+)

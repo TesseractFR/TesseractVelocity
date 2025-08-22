@@ -1,11 +1,12 @@
 package onl.tesseract.tesseractVelocity.domain.admin
 
 import java.time.Instant
+import java.util.UUID
 
 data class Ban(
     var id: Int? = null,
 
-    var uuid: String? = null,
+    var uuid: UUID? = null,
 
     var ip: String? = null,
 

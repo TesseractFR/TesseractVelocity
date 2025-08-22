@@ -22,6 +22,10 @@ class BanCommands(
     private val adminService: AdminService
 ) {
 
+    private fun CommandSource.getServerName(): String? {
+        return (this as? Player)?.currentServer?.get()?.serverInfo?.name
+    }
+
     fun registerAll() {
         proxy.commandManager.register(
                 proxy.commandManager.metaBuilder("gban").build(),
@@ -39,6 +43,11 @@ class BanCommands(
         proxy.commandManager.register(
             proxy.commandManager.metaBuilder("tempban").build(),
             BrigadierCommand(buildTempban())
+        )
+
+        proxy.commandManager.register(
+            proxy.commandManager.metaBuilder("gunban").build(),
+            BrigadierCommand(buildGunban())
         )
     }
 
@@ -78,6 +87,15 @@ class BanCommands(
                                         .executes { ctx ->
                                             executeBan(ctx, global = false, temporary = true)
                                         })))
+    }
+
+    private fun buildGunban(): LiteralArgumentBuilder<CommandSource> {
+        return literal<CommandSource>("gunban")
+                .then(argument<CommandSource, String>("target", word())
+                        .then(argument<CommandSource, String>("reason", greedyString())
+                                .executes { ctx ->
+                                    executeUnban(ctx, global = true)
+                                }))
     }
 
     private fun executeBan(
@@ -123,6 +141,29 @@ class BanCommands(
         val temp = if (duration != null) " temporairement (${formatDuration(duration)})" else ""
 
         source.sendMessage(Component.text("§a$target a été banni$temp $scope pour: $reason"))
+        return Command.SINGLE_SUCCESS
+    }
+
+    private fun executeUnban(
+        ctx: CommandContext<CommandSource>,
+        global: Boolean
+    ): Int {
+        val source = ctx.source
+        val target = ctx.getArgument("target", String::class.java)
+        val reason = ctx.getArgument("reason", String::class.java)
+
+        val staff = if (source is Player) source.username else null
+        val banTarget = resolveBanTarget(proxy, target)
+
+        val success = adminService.unban(banTarget, reason, if (global) null else source.getServerName(), staff)
+
+        if (!success) {
+            source.sendMessage(Component.text("§cLe débanissement de $target a échoué. Vérifiez que le joueur est bien banni."))
+            return 0
+        }
+
+        val scope = if (global) "globalement" else "localement"
+        source.sendMessage(Component.text("§a$target a été débanni $scope pour: $reason"))
         return Command.SINGLE_SUCCESS
     }
 

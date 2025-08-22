@@ -3,6 +3,7 @@ package onl.tesseract.tesseractVelocity.repository.admin
 
 import onl.tesseract.tesseractVelocity.Hibernate
 import onl.tesseract.tesseractVelocity.domain.admin.Ban
+import onl.tesseract.tesseractVelocity.domain.admin.Mute
 import onl.tesseract.tesseractVelocity.domain.admin.PlayerInfo
 import onl.tesseract.tesseractVelocity.domain.admin.Sanctions
 import onl.tesseract.tesseractVelocity.repository.admin.entity.BanEntity
@@ -21,14 +22,14 @@ class AdminRepository() {
         return Hibernate.inTransaction { session ->
             val query = when {
                 uuid != null -> session.createQuery(
-                    "FROM BanEntity WHERE uuid = :uuid AND (server = :server OR server IS NULL) AND state = true",
+                    "FROM BanEntity WHERE uuid = :uuid AND (server = :server OR server = '$globalServer') AND state = true",
                     BanEntity::class.java
                 ).apply {
                     setParameter("uuid", uuidToString(uuid))
                     setParameter("server", server)
                 }
                 ip != null -> session.createQuery(
-                    "FROM BanEntity WHERE ip = :ip AND (server = :server OR server IS NULL) AND state = true",
+                    "FROM BanEntity WHERE ip = :ip AND (server = :server OR server = '$globalServer') AND state = true",
                     BanEntity::class.java
                 ).apply {
                     setParameter("ip", ip)
@@ -47,6 +48,23 @@ class AdminRepository() {
                 session.persist(ban.toEntity())
             }
             true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    fun updateBan(ban: Ban): Boolean {
+        return try {
+            Hibernate.inTransaction { session ->
+                val entity = ban.toEntity()
+                if (entity.id != null) {
+                    session.merge(entity)
+                    true
+                } else {
+                    false
+                }
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             false
@@ -123,6 +141,15 @@ class AdminRepository() {
         }
     }
 
-
-
+    fun insertMute(mute: Mute): Boolean {
+        return try {
+            Hibernate.inTransaction { session ->
+                session.persist(mute.toEntity())
+            }
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
 }

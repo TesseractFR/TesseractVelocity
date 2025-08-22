@@ -27,9 +27,9 @@ class TesseractVelocity @Inject constructor(val server: ProxyServer,val logger: 
         Config.load()
         Hibernate.init(Config.dbAdmin)
 
-        val adminService = AdminService(AdminRepository())
+        val adminService = AdminService(AdminRepository(), server)
         BanCommands(server, adminService).registerAll()
-
+        server.eventManager.register(this, BanListener(adminService))
         // Enregistrement de la commande lookup
         val lookupCommand = LookupCommandHandler(adminService).createBrigadierCommand()
         server.commandManager.register(lookupCommand)

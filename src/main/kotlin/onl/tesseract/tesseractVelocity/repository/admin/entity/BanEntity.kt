@@ -4,6 +4,7 @@ package onl.tesseract.tesseractVelocity.repository.admin.entity
 
 import jakarta.persistence.*
 import onl.tesseract.tesseractVelocity.domain.admin.Ban
+import onl.tesseract.tesseractVelocity.utils.UUIDUtil
 import org.hibernate.annotations.ColumnDefault
 import org.hibernate.annotations.JdbcTypeCode
 import java.sql.Types
@@ -56,7 +57,7 @@ data class BanEntity(
     fun toModel(): Ban? {
         return Ban(
             id,
-            uuid,
+            uuid?.let {UUIDUtil.fromStringOrFix(it)},
             ip,
             staff,
             reason,
@@ -73,7 +74,7 @@ data class BanEntity(
 
 fun Ban.toEntity(): BanEntity = BanEntity(
     id = this.id,
-    uuid = this.uuid,
+    uuid = this.uuid?.let { UUIDUtil.uuidToString(it) },
     ip = this.ip,
     staff = this.staff,
     reason = this.reason,

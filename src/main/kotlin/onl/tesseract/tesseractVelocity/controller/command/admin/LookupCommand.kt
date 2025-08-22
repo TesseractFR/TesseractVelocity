@@ -55,7 +55,7 @@ class LookupCommandHandler(
 
         val banText = when {
             activeBan == null -> Component.text("Aucun", GREEN)
-            activeBan.server == "(global)" -> Component.text("Oui (global)", RED)
+            activeBan.server == null -> Component.text("Oui (global)", RED)
             else -> Component.text("Oui (serveur: ${activeBan.server})", YELLOW)
         }
 
@@ -68,7 +68,7 @@ class LookupCommandHandler(
                 .append(Component.text("Dernière IP : ", GRAY)).append(Component.text("${info.lastIp ?: "inconnue"}", WHITE)).append(Component.newline())
                 .append(Component.text("Ban actif : ", GRAY)).append(banText).append(Component.newline())
                 .append(Component.text("Mute actif : ", GRAY)).append(muteText).append(Component.newline())
-                .append(Component.text("Sanctions actives : ", GRAY))
+                .append(Component.text("Sanctions totales : ", GRAY))
                 .append(Component.text("${sanctions.bans} ban(s), ${sanctions.mutes} mute(s), ${sanctions.kicks} kick(s)", WHITE))
 
         source.sendMessage(msg)
