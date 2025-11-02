@@ -39,10 +39,19 @@ class MuteCommands(
             proxy.commandManager.metaBuilder("tempmute").build(),
             BrigadierCommand(buildTempmute())
         )
+        proxy.commandManager.register(
+            proxy.commandManager.metaBuilder("gunmute").build(),
+            BrigadierCommand(buildGunmute())
+        )
+        proxy.commandManager.register(
+            proxy.commandManager.metaBuilder("unmute").build(),
+            BrigadierCommand(buildUnmute())
+        )
     }
 
     private fun buildGmute(): LiteralArgumentBuilder<CommandSource> {
         return literal<CommandSource>("gmute")
+            .requires { it.hasPermission("tesseract.admin.gmute") }
             .then(argument<CommandSource, String>("target", word())
                 .then(argument<CommandSource, String>("reason", greedyString())
                     .executes { ctx ->
@@ -54,6 +63,7 @@ class MuteCommands(
 
     private fun buildGtempmute(): LiteralArgumentBuilder<CommandSource> {
         return literal<CommandSource>("gtempmute")
+            .requires { it.hasPermission("tesseract.admin.gtempmute") }
             .then(argument<CommandSource, String>("target", word())
                 .then(argument<CommandSource, String>("time", word())
                     .then(argument<CommandSource, String>("reason", greedyString())
@@ -67,6 +77,7 @@ class MuteCommands(
 
     private fun buildMute(): LiteralArgumentBuilder<CommandSource> {
         return literal<CommandSource>("mute")
+            .requires { it.hasPermission("tesseract.admin.mute") }
             .then(argument<CommandSource, String>("target", word())
                 .then(argument<CommandSource, String>("reason", greedyString())
                     .executes { ctx ->
@@ -78,6 +89,7 @@ class MuteCommands(
 
     private fun buildTempmute(): LiteralArgumentBuilder<CommandSource> {
         return literal<CommandSource>("tempmute")
+            .requires { it.hasPermission("tesseract.admin.tempmute") }
             .then(argument<CommandSource, String>("target", word())
                 .then(argument<CommandSource, String>("time", word())
                     .then(argument<CommandSource, String>("reason", greedyString())
@@ -85,6 +97,30 @@ class MuteCommands(
                             executeMute(ctx, global = false, temporary = true)
                         }
                     )
+                )
+            )
+    }
+
+    private fun buildGunmute(): LiteralArgumentBuilder<CommandSource> {
+        return literal<CommandSource>("gunmute")
+            .requires { it.hasPermission("tesseract.admin.gunmute") }
+            .then(argument<CommandSource, String>("target", word())
+                .then(argument<CommandSource, String>("reason", greedyString())
+                    .executes { ctx ->
+                        executeUnmute(ctx, global = true)
+                    }
+                )
+            )
+    }
+
+    private fun buildUnmute(): LiteralArgumentBuilder<CommandSource> {
+        return literal<CommandSource>("unmute")
+            .requires { it.hasPermission("tesseract.admin.unmute") }
+            .then(argument<CommandSource, String>("target", word())
+                .then(argument<CommandSource, String>("reason", greedyString())
+                    .executes { ctx ->
+                        executeUnmute(ctx, global = false)
+                    }
                 )
             )
     }
@@ -142,6 +178,35 @@ class MuteCommands(
             duration.toMinutes() >= 1 -> "${duration.toMinutes()} minutes"
             else -> "${duration.seconds} secondes"
         }
+    }
+
+    private fun executeUnmute(ctx: CommandContext<CommandSource>, global: Boolean): Int {
+        val source = ctx.source
+        val target = ctx.getArgument("target", String::class.java)
+        val reason = ctx.getArgument("reason", String::class.java)
+
+        val sourceServer: String? = if (global) {
+            null
+        } else {
+            val server = (source as? Player)?.currentServer?.get()?.serverInfo?.name
+            if (server == null) {
+                source.sendMessage(Component.text("§cCette commande ne peut être utilisée que par un joueur connecté."))
+                return 0
+            }
+            server
+        }
+
+        val staff = if (source is Player) source.username else null
+        val success = adminService.unmute(resolveMuteTarget(proxy, target), reason, sourceServer, staff)
+
+        if (!success) {
+            source.sendMessage(Component.text("§cLe unmute de $target a échoué. Vérifiez que la personne est bien mute."))
+            return 0
+        }
+
+        val scope = if (global) "globalement" else "localement"
+        source.sendMessage(Component.text("§a$target a été démute $scope pour: $reason"))
+        return Command.SINGLE_SUCCESS
     }
 
     fun resolveMuteTarget(proxy: ProxyServer, input: String): BanTarget {

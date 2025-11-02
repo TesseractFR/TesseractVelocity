@@ -81,7 +81,7 @@ class LookupCommandHandler(
 
         val banText = when {
             activeBan == null -> Component.text("Aucun", GREEN)
-            activeBan.server == "(global)" -> Component.text("Oui (global)", RED)
+            activeBan.server == null -> Component.text("Oui (global)", RED)
             else -> Component.text("Oui (serveur: ${activeBan.server})", YELLOW)
         }
 

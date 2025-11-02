@@ -53,6 +53,7 @@ class BanCommands(
 
     private fun buildGban(): LiteralArgumentBuilder<CommandSource> {
         return literal<CommandSource>("gban")
+                .requires { it.hasPermission("tesseract.admin.gban") }
                 .then(argument<CommandSource, String>("target", word())
                         .then(argument<CommandSource, String>("reason", greedyString())
                                 .executes { ctx ->
@@ -62,6 +63,7 @@ class BanCommands(
 
     private fun buildGtempban(): LiteralArgumentBuilder<CommandSource> {
         return literal<CommandSource>("gtempban")
+                .requires { it.hasPermission("tesseract.admin.gtempban") }
                 .then(argument<CommandSource, String>("target", word())
                         .then(argument<CommandSource, String>("time", word())
                                 .then(argument<CommandSource, String>("reason", greedyString())
@@ -72,6 +74,7 @@ class BanCommands(
 
     private fun buildBan(): LiteralArgumentBuilder<CommandSource> {
         return literal<CommandSource>("ban")
+                .requires { it.hasPermission("tesseract.admin.ban") }
                 .then(argument<CommandSource, String>("target", word())
                         .then(argument<CommandSource, String>("reason", greedyString())
                                 .executes { ctx ->
@@ -81,6 +84,7 @@ class BanCommands(
 
     private fun buildTempban(): LiteralArgumentBuilder<CommandSource> {
         return literal<CommandSource>("tempban")
+                .requires { it.hasPermission("tesseract.admin.tempban") }
                 .then(argument<CommandSource, String>("target", word())
                         .then(argument<CommandSource, String>("time", word())
                                 .then(argument<CommandSource, String>("reason", greedyString())
@@ -91,6 +95,7 @@ class BanCommands(
 
     private fun buildGunban(): LiteralArgumentBuilder<CommandSource> {
         return literal<CommandSource>("gunban")
+                .requires { it.hasPermission("tesseract.admin.gunban") }
                 .then(argument<CommandSource, String>("target", word())
                         .then(argument<CommandSource, String>("reason", greedyString())
                                 .executes { ctx ->

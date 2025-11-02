@@ -11,7 +11,14 @@ import java.util.*
 
 class AdminService(val adminRepository: AdminRepository, private val server: com.velocitypowered.api.proxy.ProxyServer) {
 
+    fun getActiveMute(player: Player, server: String?): Mute? {
+        val ip = (player.remoteAddress as InetSocketAddress).address.hostAddress
+        return getActiveMute(player.uniqueId, ip, server)
+    }
 
+    fun getActiveMute(playeruuid: UUID?, ip: String? = null, server: String?): Mute? {
+        return adminRepository.getActiveMute(playeruuid, ip, server)
+    }
 
     fun getActiveBan(player: Player, server: String?) : Ban?{
         val ip = (player.remoteAddress as InetSocketAddress).address.hostAddress
@@ -144,6 +151,68 @@ class AdminService(val adminRepository: AdminRepository, private val server: com
 
     fun getPlayersByIp(ipAddress: String): List<PlayerInfo> {
         return adminRepository.findPlayersByIp(ipAddress)
+    }
+
+    fun unmute(target: BanTarget, reason: String?, server: String?, staff: String?): Boolean {
+        val playerUUID: UUID? = when (target) {
+            is BanTarget.Player -> target.player.uniqueId
+            else -> null
+        }
+        val ip: String? = when (target) {
+            is BanTarget.Ip -> target.address
+            else -> null
+        }
+        val activeMute = adminRepository.getActiveMute(playerUUID, ip, server) ?: return false
+        activeMute.muteState = false
+        activeMute.muteUnmutereason = reason
+        activeMute.muteUnmutestaff = staff ?: "Console"
+        activeMute.muteUnmutedate = Instant.now()
+        return adminRepository.updateMute(activeMute)
+    }
+
+    fun listActiveBans(server: String?): List<Ban> = adminRepository.listActiveBans(server)
+    fun listActiveMutes(server: String?): List<Mute> = adminRepository.listActiveMutes(server)
+
+    fun getHistory(uuid: UUID?, ip: String?): Pair<List<Ban>, List<Mute>> {
+        val bans = adminRepository.findBansByUuidOrIp(uuid, ip)
+        val mutes = adminRepository.findMutesByUuidOrIp(uuid, ip)
+        return bans to mutes
+    }
+
+    fun kick(target: BanTarget, reason: String?, server: String?, staff: String?): Boolean {
+        val kickServer = server ?: "(global)"
+        return when (target) {
+            is BanTarget.Player -> {
+                val uuid = target.player.uniqueId
+                val ok = adminRepository.insertKick(uuid, staff ?: "Console", reason, kickServer)
+                if (ok) {
+                    target.player.disconnect(Component.text("§cExpulsé: ${reason ?: "Aucune raison"}"))
+                }
+                ok
+            }
+            is BanTarget.Ip -> {
+                // Kick all players matching IP and log per player
+                val players = server?.let { s ->
+                    this.server.allPlayers.filter { p ->
+                        val ipAddr = (p.remoteAddress as InetSocketAddress).address.hostAddress
+                        val onServer = p.currentServer.map { it.serverInfo.name }.orElse(null) == s
+                        ipAddr == target.address && onServer
+                    }
+                } ?: this.server.allPlayers.filter { p ->
+                    val ipAddr = (p.remoteAddress as InetSocketAddress).address.hostAddress
+                    ipAddr == target.address
+                }
+                var any = false
+                players.forEach { p ->
+                    val ok = adminRepository.insertKick(p.uniqueId, staff ?: "Console", reason, kickServer)
+                    if (ok) {
+                        p.disconnect(Component.text("§cExpulsé: ${reason ?: "Aucune raison"}"))
+                        any = true
+                    }
+                }
+                any
+            }
+        }
     }
 
     private fun createBanMessage(reason: String, server: String?, duration: Duration?, staff: String?): Component {
