@@ -7,7 +7,7 @@ import com.velocitypowered.api.command.BrigadierCommand
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor.*
 import onl.tesseract.tesseractVelocity.service.admin.AdminService
-import java.util.regex.Pattern
+import onl.tesseract.tesseractVelocity.utils.IpUtil
 
 class LookupCommandHandler(
     private val adminService: AdminService
@@ -38,8 +38,7 @@ class LookupCommandHandler(
     }
 
     private fun isIp(input: String): Boolean {
-        val ipRegex = Pattern.compile("^((25[0-5]|2[0-4]\\d|1\\d{2}|[1-9]?\\d)\\.){3}(25[0-5]|2[0-4]\\d|1\\d{2}|[1-9]?\\d)$")
-        return ipRegex.matcher(input).matches()
+        return IpUtil.isValidIPv4(input)
     }
 
     private fun handlePlayerLookup(source: CommandSource, playerName: String) {
@@ -64,12 +63,14 @@ class LookupCommandHandler(
         val msg = Component.text()
                 .append(Component.text("§7[LOOKUP] ", GRAY))
                 .append(Component.text("Joueur : ", GRAY)).append(Component.text(info.name, WHITE)).append(Component.newline())
+                .append(Component.text("Première connexion : ", GRAY)).append(Component.text("${info.firstJoin}", WHITE)).append(Component.newline())
                 .append(Component.text("Dernière connexion : ", GRAY)).append(Component.text("${info.lastSeen}", WHITE)).append(Component.newline())
                 .append(Component.text("Dernière IP : ", GRAY)).append(Component.text("${info.lastIp ?: "inconnue"}", WHITE)).append(Component.newline())
                 .append(Component.text("Ban actif : ", GRAY)).append(banText).append(Component.newline())
                 .append(Component.text("Mute actif : ", GRAY)).append(muteText).append(Component.newline())
                 .append(Component.text("Sanctions totales : ", GRAY))
-                .append(Component.text("${sanctions.bans} ban(s), ${sanctions.mutes} mute(s), ${sanctions.kicks} kick(s)", WHITE))
+                .append(Component.text("${sanctions.bans} ban(s), ${sanctions.mutes} mute(s), ${sanctions.kicks} kick(s)", WHITE)).append(Component.newline())
+                .append(Component.text("Astuce: /history ", GRAY)).append(Component.text(info.name, WHITE)).append(Component.text(" pour les détails.", GRAY))
 
         source.sendMessage(msg)
     }

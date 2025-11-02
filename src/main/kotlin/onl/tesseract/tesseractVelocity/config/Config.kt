@@ -5,6 +5,7 @@ import com.moandjiezana.toml.Toml;
 
 object Config  {
     lateinit var dbAdmin: DatabaseConfig
+    var broadcastStaff: Boolean = true
 
     fun load() {
         val configFile = File("plugins/tesseract", "config.toml")
@@ -20,6 +21,8 @@ object Config  {
             dialect = toml.getString("database_dialect")?: error("dialect is missing"),
             driver = toml.getString("database_driver")?: error("driver is missing")
         )
+        // Optionnel: broadcast des notifications staff (true par défaut)
+        broadcastStaff = toml.getBoolean("broadcast_staff") ?: true
     }
 }
 

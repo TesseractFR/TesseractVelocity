@@ -11,6 +11,15 @@ import java.util.*
 
 class AdminService(val adminRepository: AdminRepository, private val server: com.velocitypowered.api.proxy.ProxyServer) {
 
+    private fun notifyStaff(message: Component) {
+        if (!onl.tesseract.tesseractVelocity.config.Config.broadcastStaff) return
+        server.allPlayers.forEach { p ->
+            if (p.hasPermission("tesseract.admin.notify")) {
+                p.sendMessage(message)
+            }
+        }
+    }
+
     fun getActiveMute(player: Player, server: String?): Mute? {
         val ip = (player.remoteAddress as InetSocketAddress).address.hostAddress
         return getActiveMute(player.uniqueId, ip, server)
@@ -58,7 +67,14 @@ class AdminService(val adminRepository: AdminRepository, private val server: com
             muteState = true
         )
 
-        return adminRepository.insertMute(mute)
+        val ok = adminRepository.insertMute(mute)
+        if (ok) {
+            val scope = if (server == null) "global" else "serveur $server"
+            val temp = duration?.let { d -> " temporaire (${formatDuration(d)})" } ?: ""
+            val who = playerUUID?.toString() ?: (ip ?: "?")
+            notifyStaff(Component.text("§d[STAFF] §fMute$temp §7| §b$who §7| §f$scope §7| Raison: §f$reason §7| Par: §f${staff ?: "Console"}"))
+        }
+        return ok
     }
 
     fun ban(
@@ -107,6 +123,10 @@ class AdminService(val adminRepository: AdminRepository, private val server: com
                     kickAllPlayersWithIp(ip, banMessage, server)
                 }
             }
+            val scope = if (server == null) "global" else "serveur $server"
+            val temp = duration?.let { d -> " temporaire (${formatDuration(d)})" } ?: ""
+            val who = playerUUID?.toString() ?: (ip ?: "?")
+            notifyStaff(Component.text("§d[STAFF] §fBan$temp §7| §b$who §7| §f$scope §7| Raison: §f$reason §7| Par: §f${staff ?: "Console"}"))
         }
 
         return success
@@ -134,7 +154,13 @@ class AdminService(val adminRepository: AdminRepository, private val server: com
         activeBan.unbanstaff = staff ?: "Console"
         activeBan.unbandate = Instant.now()
 
-        return adminRepository.updateBan(activeBan)
+        val ok = adminRepository.updateBan(activeBan)
+        if (ok) {
+            val scope = if (server == null) "global" else "serveur $server"
+            val who = playerUUID?.toString() ?: (ip ?: "?")
+            notifyStaff(Component.text("§d[STAFF] §aUnban §7| §b$who §7| §f$scope §7| Raison: §f${reason ?: "-"} §7| Par: §f${staff ?: "Console"}"))
+        }
+        return ok
     }
     fun getPlayerInfo(playerName: String): PlayerInfo? {
         return adminRepository.findPlayerByName(playerName)
@@ -167,7 +193,13 @@ class AdminService(val adminRepository: AdminRepository, private val server: com
         activeMute.muteUnmutereason = reason
         activeMute.muteUnmutestaff = staff ?: "Console"
         activeMute.muteUnmutedate = Instant.now()
-        return adminRepository.updateMute(activeMute)
+        val ok = adminRepository.updateMute(activeMute)
+        if (ok) {
+            val scope = if (server == null) "global" else "serveur $server"
+            val who = playerUUID?.toString() ?: (ip ?: "?")
+            notifyStaff(Component.text("§d[STAFF] §aUnmute §7| §b$who §7| §f$scope §7| Raison: §f${reason ?: "-"} §7| Par: §f${staff ?: "Console"}"))
+        }
+        return ok
     }
 
     fun listActiveBans(server: String?): List<Ban> = adminRepository.listActiveBans(server)
@@ -187,6 +219,7 @@ class AdminService(val adminRepository: AdminRepository, private val server: com
                 val ok = adminRepository.insertKick(uuid, staff ?: "Console", reason, kickServer)
                 if (ok) {
                     target.player.disconnect(Component.text("§cExpulsé: ${reason ?: "Aucune raison"}"))
+                    notifyStaff(Component.text("§d[STAFF] §eKick §7| §b${uuid} §7| §f${kickServer} §7| Raison: §f${reason ?: "-"} §7| Par: §f${staff ?: "Console"}"))
                 }
                 ok
             }

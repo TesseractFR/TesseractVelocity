@@ -10,6 +10,8 @@ import commands.BanCommands
 import commands.MuteCommands
 import commands.KickCommands
 import commands.ListCommands
+import commands.AltsCommands
+import commands.ReloadCommands
 import onl.tesseract.tesseractVelocity.command.LookupCommandHandler
 import onl.tesseract.tesseractVelocity.config.Config
 import onl.tesseract.tesseractVelocity.controller.listener.admin.BanListener
@@ -36,7 +38,10 @@ class TesseractVelocity @Inject constructor(val server: ProxyServer,val logger: 
         MuteCommands(server, adminService).registerAll()
         KickCommands(server, adminService).registerAll()
         ListCommands(server, adminService).registerAll()
+        AltsCommands(server, adminService).registerAll()
+        ReloadCommands(server).registerAll()
         server.eventManager.register(this, BanListener(adminService))
+        server.eventManager.register(this, ChatListener(adminService))
         // Enregistrement de la commande lookup
         val lookupCommand = LookupCommandHandler(adminService).createBrigadierCommand()
         server.commandManager.register(lookupCommand)
