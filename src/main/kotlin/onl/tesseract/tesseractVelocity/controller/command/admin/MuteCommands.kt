@@ -15,6 +15,7 @@ import net.kyori.adventure.text.Component
 import onl.tesseract.tesseractVelocity.domain.admin.BanTarget
 import onl.tesseract.tesseractVelocity.service.admin.AdminService
 import onl.tesseract.tesseractVelocity.utils.TimeParser
+import onl.tesseract.tesseractVelocity.utils.IpUtil
 import java.time.Duration
 
 class MuteCommands(
@@ -131,7 +132,7 @@ class MuteCommands(
         temporary: Boolean
     ): Int {
         val source = ctx.source
-        val target = ctx.getArgument("target", String::class.java)
+        val targetInput = ctx.getArgument("target", String::class.java)
         val reason = ctx.getArgument("reason", String::class.java)
 
         val duration: Duration? = if (temporary) {
@@ -155,18 +156,24 @@ class MuteCommands(
             server
         }
 
+        val target = resolveTarget(targetInput)
+        if (target == null) {
+            source.sendMessage(Component.text("§cCible invalide: utilisez un pseudo en ligne ou une IPv4 valide."))
+            return 0
+        }
+
         val staff = if (source is Player) source.username else null
-        val success = adminService.mute(resolveMuteTarget(proxy, target), reason, sourceServer, duration, staff)
+        val success = adminService.mute(target, reason, sourceServer, duration, staff)
 
         if (!success) {
-            source.sendMessage(Component.text("§cLe mute de $target a échoué."))
+            source.sendMessage(Component.text("§cLe mute de $targetInput a échoué."))
             return 0
         }
 
         val scope = if (global) "globalement" else "localement"
         val temp = if (duration != null) " temporairement (${formatDuration(duration)})" else ""
 
-        source.sendMessage(Component.text("§a$target a été mute$temp $scope pour: $reason"))
+        source.sendMessage(Component.text("§a$targetInput a été mute$temp $scope pour: $reason"))
         return Command.SINGLE_SUCCESS
     }
 
@@ -182,7 +189,7 @@ class MuteCommands(
 
     private fun executeUnmute(ctx: CommandContext<CommandSource>, global: Boolean): Int {
         val source = ctx.source
-        val target = ctx.getArgument("target", String::class.java)
+        val targetInput = ctx.getArgument("target", String::class.java)
         val reason = ctx.getArgument("reason", String::class.java)
 
         val sourceServer: String? = if (global) {
@@ -196,32 +203,28 @@ class MuteCommands(
             server
         }
 
+        val target = resolveTarget(targetInput)
+        if (target == null) {
+            source.sendMessage(Component.text("§cCible invalide: utilisez un pseudo en ligne ou une IPv4 valide."))
+            return 0
+        }
+
         val staff = if (source is Player) source.username else null
-        val success = adminService.unmute(resolveMuteTarget(proxy, target), reason, sourceServer, staff)
+        val success = adminService.unmute(target, reason, sourceServer, staff)
 
         if (!success) {
-            source.sendMessage(Component.text("§cLe unmute de $target a échoué. Vérifiez que la personne est bien mute."))
+            source.sendMessage(Component.text("§cLe unmute de $targetInput a échoué. Vérifiez que la personne est bien mute."))
             return 0
         }
 
         val scope = if (global) "globalement" else "localement"
-        source.sendMessage(Component.text("§a$target a été démute $scope pour: $reason"))
+        source.sendMessage(Component.text("§a$targetInput a été démute $scope pour: $reason"))
         return Command.SINGLE_SUCCESS
     }
 
-    fun resolveMuteTarget(proxy: ProxyServer, input: String): BanTarget {
-        if (isIpAddress(input)) {
-            return BanTarget.Ip(input)
-        }
+    private fun resolveTarget(input: String): BanTarget? {
+        if (IpUtil.isValidIPv4(input)) return BanTarget.Ip(input)
         val player = proxy.getPlayer(input).orElse(null)
-        return if (player != null) {
-            BanTarget.Player(player)
-        } else {
-            BanTarget.Ip(input) // ip ou pseudo non connecté
-        }
-    }
-
-    fun isIpAddress(input: String): Boolean {
-        return Regex("""^(\d{1,3}\.){3}\d{1,3}$""").matches(input)
+        return if (player != null) BanTarget.Player(player) else null
     }
 }

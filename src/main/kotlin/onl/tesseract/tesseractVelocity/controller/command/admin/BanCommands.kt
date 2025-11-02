@@ -15,6 +15,7 @@ import net.kyori.adventure.text.Component
 import onl.tesseract.tesseractVelocity.domain.admin.BanTarget
 import onl.tesseract.tesseractVelocity.service.admin.AdminService
 import onl.tesseract.tesseractVelocity.utils.TimeParser
+import onl.tesseract.tesseractVelocity.utils.IpUtil
 import java.time.Duration
 
 class BanCommands(
@@ -135,7 +136,12 @@ class BanCommands(
         }
 
         val staff = if (source is Player) source.username else null
-        val success = adminService.ban(resolveBanTarget(proxy,target), reason, sourceServer, duration, staff)
+        val targetObj = resolveTarget(proxy, target)
+        if (targetObj == null) {
+            source.sendMessage(Component.text("§cCible invalide: utilisez un pseudo en ligne ou une IPv4 valide."))
+            return 0
+        }
+        val success = adminService.ban(targetObj, reason, sourceServer, duration, staff)
 
         if (!success) {
             source.sendMessage(Component.text("§cLe bannissement de $target a échoué."))
@@ -158,7 +164,11 @@ class BanCommands(
         val reason = ctx.getArgument("reason", String::class.java)
 
         val staff = if (source is Player) source.username else null
-        val banTarget = resolveBanTarget(proxy, target)
+        val banTarget = resolveTarget(proxy, target)
+        if (banTarget == null) {
+            source.sendMessage(Component.text("§cCible invalide: utilisez un pseudo en ligne ou une IPv4 valide."))
+            return 0
+        }
 
         val success = adminService.unban(banTarget, reason, if (global) null else source.getServerName(), staff)
 
@@ -183,19 +193,10 @@ class BanCommands(
         }
     }
 
-    fun resolveBanTarget(proxy: ProxyServer, input: String): BanTarget {
-        if(isIpAddress(input)){
-            return BanTarget.Ip(input)
-        }
+    private fun resolveTarget(proxy: ProxyServer, input: String): BanTarget? {
+        if (IpUtil.isValidIPv4(input)) return BanTarget.Ip(input)
         val player = proxy.getPlayer(input).orElse(null)
-        return if (player != null) {
-            BanTarget.Player(player)
-        } else {
-            BanTarget.Ip(input) // ip ou pseudo non connecté
-        }
-    }
-    fun isIpAddress(input: String): Boolean {
-        return Regex("""^(\d{1,3}\.){3}\d{1,3}$""").matches(input)
+        return if (player != null) BanTarget.Player(player) else null
     }
 
 }

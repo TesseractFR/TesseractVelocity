@@ -7,9 +7,13 @@ import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
 import commands.BanCommands
+import commands.MuteCommands
+import commands.KickCommands
+import commands.ListCommands
 import onl.tesseract.tesseractVelocity.command.LookupCommandHandler
 import onl.tesseract.tesseractVelocity.config.Config
 import onl.tesseract.tesseractVelocity.controller.listener.admin.BanListener
+import onl.tesseract.tesseractVelocity.controller.listener.admin.ChatListener
 import onl.tesseract.tesseractVelocity.repository.admin.AdminRepository
 import onl.tesseract.tesseractVelocity.service.admin.AdminService
 import org.slf4j.Logger
@@ -29,6 +33,9 @@ class TesseractVelocity @Inject constructor(val server: ProxyServer,val logger: 
 
         val adminService = AdminService(AdminRepository(), server)
         BanCommands(server, adminService).registerAll()
+        MuteCommands(server, adminService).registerAll()
+        KickCommands(server, adminService).registerAll()
+        ListCommands(server, adminService).registerAll()
         server.eventManager.register(this, BanListener(adminService))
         // Enregistrement de la commande lookup
         val lookupCommand = LookupCommandHandler(adminService).createBrigadierCommand()
