@@ -11,7 +11,7 @@ import java.sql.Types
 import kotlin.time.ExperimentalTime
 
 @Entity
-@Table(name = "BAT_ban")
+@Table(name = "t_admin_ban")
 data class BanEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

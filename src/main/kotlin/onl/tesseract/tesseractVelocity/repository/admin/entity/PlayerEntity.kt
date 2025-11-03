@@ -11,7 +11,7 @@ import org.hibernate.annotations.ColumnDefault
 import java.time.Instant
 
 @Entity
-@Table(name = "BAT_players")
+@Table(name = "t_admin_players")
 data class PlayerEntity (
     @Column(name = "BAT_player", nullable = false, length = 30)
     var batPlayer: String = "",

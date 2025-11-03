@@ -8,7 +8,7 @@ import org.hibernate.annotations.ColumnDefault
 import java.time.Instant
 
 @Entity
-@Table(name = "BAT_kick")
+@Table(name = "t_admin_kick")
 data class KickEntity (
     @Id
     @Column(name = "kick_id", nullable = false)

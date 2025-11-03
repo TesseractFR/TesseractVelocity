@@ -9,7 +9,7 @@ import org.hibernate.annotations.ColumnDefault
 import java.time.Instant
 
 @Entity
-@Table(name = "BAT_mute")
+@Table(name = "t_admin_mute")
 data class MuteEntity(
     @Id
     @Column(name = "mute_id", nullable = false)

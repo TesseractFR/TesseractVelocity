@@ -5,7 +5,7 @@ import org.hibernate.annotations.ColumnDefault
 import java.time.Instant
 
 @Entity
-@Table(name = "bat_comments")
+@Table(name = "t_admin_comments")
 data class CommentEntity (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
