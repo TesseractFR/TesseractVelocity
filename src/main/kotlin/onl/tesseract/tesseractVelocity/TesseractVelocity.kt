@@ -13,10 +13,14 @@ import commands.ListCommands
 import commands.AltsCommands
 import commands.ReloadCommands
 import commands.StaffChatCommands
+import commands.GlobalChatCommands
+import commands.ServerCommands
+import commands.MessageCommands
 import onl.tesseract.tesseractVelocity.command.LookupCommandHandler
 import onl.tesseract.tesseractVelocity.config.Config
 import onl.tesseract.tesseractVelocity.controller.listener.admin.BanListener
 import onl.tesseract.tesseractVelocity.controller.listener.admin.ChatListener
+import onl.tesseract.tesseractVelocity.controller.listener.globalchat.GlobalChatChatListener
 import onl.tesseract.tesseractVelocity.controller.listener.staffchat.StaffChatChatListener
 import onl.tesseract.tesseractVelocity.repository.admin.AdminRepository
 import onl.tesseract.tesseractVelocity.service.admin.AdminService
@@ -43,9 +47,13 @@ class TesseractVelocity @Inject constructor(val server: ProxyServer,val logger: 
         AltsCommands(server, adminService).registerAll()
         ReloadCommands(server).registerAll()
         StaffChatCommands(server).registerAll()
+        GlobalChatCommands(server).registerAll()
+        MessageCommands(server).registerAll()
+        ServerCommands(server,this).registerAll()
         server.eventManager.register(this, BanListener(adminService))
         server.eventManager.register(this, ChatListener(adminService))
         server.eventManager.register(this, StaffChatChatListener(server))
+        server.eventManager.register(this, GlobalChatChatListener(server))
         // Enregistrement de la commande lookup
         val lookupCommand = LookupCommandHandler(adminService).createBrigadierCommand()
         server.commandManager.register(lookupCommand)
