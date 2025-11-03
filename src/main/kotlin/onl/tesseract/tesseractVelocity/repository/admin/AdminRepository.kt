@@ -7,10 +7,12 @@ import onl.tesseract.tesseractVelocity.domain.admin.Mute
 import onl.tesseract.tesseractVelocity.domain.admin.PlayerInfo
 import onl.tesseract.tesseractVelocity.domain.admin.Sanctions
 import onl.tesseract.tesseractVelocity.repository.admin.entity.BanEntity
+import onl.tesseract.tesseractVelocity.repository.admin.entity.KickEntity
 import onl.tesseract.tesseractVelocity.repository.admin.entity.MuteEntity
 import onl.tesseract.tesseractVelocity.repository.admin.entity.PlayerEntity
 import onl.tesseract.tesseractVelocity.repository.admin.entity.toEntity
 import onl.tesseract.tesseractVelocity.utils.UUIDUtil.uuidToString
+import java.time.Instant
 import java.util.*
 
 
@@ -96,13 +98,13 @@ class AdminRepository() {
     fun insertKick(uuid: UUID, staff: String, reason: String?, server: String): Boolean {
         return try {
             Hibernate.inTransaction { session ->
-                val entity = onl.tesseract.tesseractVelocity.repository.admin.entity.KickEntity(
+                val entity = KickEntity(
                     id = null,
                     uuid = uuidToString(uuid),
                     kickStaff = staff,
                     kickReason = reason,
                     kickServer = server,
-                    kickDate = java.time.Instant.now()
+                    kickDate = Instant.now()
                 )
                 session.persist(entity)
             }

@@ -22,8 +22,11 @@ import onl.tesseract.tesseractVelocity.controller.listener.admin.BanListener
 import onl.tesseract.tesseractVelocity.controller.listener.admin.ChatListener
 import onl.tesseract.tesseractVelocity.controller.listener.globalchat.GlobalChatChatListener
 import onl.tesseract.tesseractVelocity.controller.listener.staffchat.StaffChatChatListener
+import onl.tesseract.tesseractVelocity.controller.listener.vote.VoteListener
 import onl.tesseract.tesseractVelocity.repository.admin.AdminRepository
+import onl.tesseract.tesseractVelocity.repository.vote.VoteRepository
 import onl.tesseract.tesseractVelocity.service.admin.AdminService
+import onl.tesseract.tesseractVelocity.service.vote.VoteService
 import org.slf4j.Logger
 import java.nio.file.Path
 
@@ -31,15 +34,17 @@ import java.nio.file.Path
 @Plugin(
     id = "tesseractvelocity", name = "TesseractVelocity", version = "1.0-SNAPSHOT")
 class TesseractVelocity @Inject constructor(val server: ProxyServer,val logger: Logger,@DataDirectory val dataDirectory : Path) {
-
+    init {
+        instance = this
+    }
 
     @Subscribe
     fun onProxyInitialization(event: ProxyInitializeEvent) {
         logger.info("Tesseract initialization")
         Config.load()
         Hibernate.init(Config.dbAdmin)
-
         val adminService = AdminService(AdminRepository(), server)
+        val voteService = VoteService(VoteRepository())
         BanCommands(server, adminService).registerAll()
         MuteCommands(server, adminService).registerAll()
         KickCommands(server, adminService).registerAll()
@@ -51,6 +56,7 @@ class TesseractVelocity @Inject constructor(val server: ProxyServer,val logger: 
         MessageCommands(server).registerAll()
         ServerCommands(server,this).registerAll()
         server.eventManager.register(this, BanListener(adminService))
+        server.eventManager.register(this, VoteListener(voteService))
         server.eventManager.register(this, ChatListener(adminService))
         server.eventManager.register(this, StaffChatChatListener(server))
         server.eventManager.register(this, GlobalChatChatListener(server))
@@ -58,5 +64,10 @@ class TesseractVelocity @Inject constructor(val server: ProxyServer,val logger: 
         val lookupCommand = LookupCommandHandler(adminService).createBrigadierCommand()
         server.commandManager.register(lookupCommand)
         logger.info("Commande lookup enregistrée avec permission tesseract.admin.lookup")
+    }
+
+    companion object {
+        lateinit var instance: TesseractVelocity
+            private set
     }
 }

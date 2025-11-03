@@ -1,10 +1,14 @@
 package onl.tesseract.tesseractVelocity
 
 import onl.tesseract.tesseractVelocity.config.DatabaseConfig
+import onl.tesseract.tesseractVelocity.domain.vote.VotePoint
 import onl.tesseract.tesseractVelocity.repository.admin.entity.BanEntity
 import onl.tesseract.tesseractVelocity.repository.admin.entity.KickEntity
 import onl.tesseract.tesseractVelocity.repository.admin.entity.MuteEntity
 import onl.tesseract.tesseractVelocity.repository.admin.entity.PlayerEntity
+import onl.tesseract.tesseractVelocity.repository.vote.entity.VoteBufferEntity
+import onl.tesseract.tesseractVelocity.repository.vote.entity.VoteEntity
+import onl.tesseract.tesseractVelocity.repository.vote.entity.VotePointEntity
 import org.hibernate.SessionFactory
 import org.hibernate.boot.MetadataSources
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder
@@ -29,6 +33,10 @@ object Hibernate {
                 .addAnnotatedClass(MuteEntity::class.java)
                 .addAnnotatedClass(PlayerEntity::class.java)
                 .addAnnotatedClass(KickEntity::class.java)
+                .addAnnotatedClass(VoteBufferEntity::class.java)
+                .addAnnotatedClass(VoteEntity::class.java)
+                .addAnnotatedClass(VotePointEntity::class.java)
+                .addAnnotatedClass(VoteSiteEntity::class.java)
                 .buildMetadata()
                 .buildSessionFactory()
     }
