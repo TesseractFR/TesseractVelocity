@@ -13,11 +13,11 @@ import java.time.Instant
 @Entity
 @Table(name = "t_admin_players")
 data class PlayerEntity (
-    @Column(name = "BAT_player", nullable = false, length = 30)
+    @Column(name = "name", nullable = false, length = 30)
     var batPlayer: String = "",
 
     @Id
-    @Column(name = "UUID", nullable = false, length = 32)
+    @Column(name = "uuid", nullable = false, length = 32)
     var uuid: String = "",
 
     @Column(name = "lastip", nullable = false, length = 50)

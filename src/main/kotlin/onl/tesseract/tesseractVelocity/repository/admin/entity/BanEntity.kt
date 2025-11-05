@@ -15,43 +15,43 @@ import kotlin.time.ExperimentalTime
 data class BanEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ban_id", nullable = false)
+    @Column(name = "id", nullable = false)
     var id: Int? = null,
 
-    @Column(name = "UUID", length = 36, columnDefinition = "VARCHAR(36)")
+    @Column(name = "uuid", length = 36, columnDefinition = "VARCHAR(36)")
     @JdbcTypeCode(Types.VARCHAR)
     var uuid: String? = null,
 
-    @Column(name = "ban_ip", length = 50)
+    @Column(name = "ip", length = 50)
     var ip: String? = null,
 
-    @Column(name = "ban_staff", nullable = false, length = 30)
+    @Column(name = "staff", nullable = false, length = 30)
     var staff: String? = null,
 
-    @Column(name = "ban_reason", length = 100)
+    @Column(name = "reason", length = 100)
     var reason: String? = null,
 
-    @Column(name = "ban_server", nullable = false, length = 30)
+    @Column(name = "server", nullable = false, length = 30)
     var server: String? = null,
 
     @ColumnDefault("current_timestamp()")
-    @Column(name = "ban_begin", nullable = false)
+    @Column(name = "begin", nullable = false)
     var begin: java.time.Instant? = null,
 
-    @Column(name = "ban_end")
+    @Column(name = "end")
     var end: java.time.Instant? = null,
 
     @ColumnDefault("1")
-    @Column(name = "ban_state", nullable = false)
+    @Column(name = "state", nullable = false)
     var state: Boolean? = false,
 
-    @Column(name = "ban_unbandate")
+    @Column(name = "unbandate")
     var unbandate: java.time.Instant? = null,
 
-    @Column(name = "ban_unbanstaff", length = 30)
+    @Column(name = "unbanstaff", length = 30)
     var unbanstaff: String? = null,
 
-    @Column(name = "ban_unbanreason", length = 100)
+    @Column(name = "unbanreason", length = 100)
     var unbanreason: String? = null,
 ) {
     fun toModel(): Ban? {

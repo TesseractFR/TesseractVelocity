@@ -20,6 +20,7 @@ import onl.tesseract.tesseractVelocity.command.LookupCommandHandler
 import onl.tesseract.tesseractVelocity.config.Config
 import onl.tesseract.tesseractVelocity.controller.listener.admin.BanListener
 import onl.tesseract.tesseractVelocity.controller.listener.admin.ChatListener
+import onl.tesseract.tesseractVelocity.controller.listener.admin.PlayerListener
 import onl.tesseract.tesseractVelocity.controller.listener.globalchat.GlobalChatChatListener
 import onl.tesseract.tesseractVelocity.controller.listener.staffchat.StaffChatChatListener
 import onl.tesseract.tesseractVelocity.controller.listener.vote.VoteListener
@@ -56,6 +57,7 @@ class TesseractVelocity @Inject constructor(val server: ProxyServer,val logger: 
         MessageCommands(server).registerAll()
         ServerCommands(server,this).registerAll()
         server.eventManager.register(this, BanListener(adminService))
+        server.eventManager.register(this, PlayerListener(adminService))
         server.eventManager.register(this, VoteListener(voteService))
         server.eventManager.register(this, ChatListener(adminService))
         server.eventManager.register(this, StaffChatChatListener(server))

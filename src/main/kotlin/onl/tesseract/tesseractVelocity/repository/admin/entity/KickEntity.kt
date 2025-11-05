@@ -11,22 +11,22 @@ import java.time.Instant
 @Table(name = "t_admin_kick")
 data class KickEntity (
     @Id
-    @Column(name = "kick_id", nullable = false)
+    @Column(name = "id", nullable = false)
     var id: Int? = null,
 
-    @Column(name = "UUID", nullable = false, length = 100)
+    @Column(name = "uuid", nullable = false, length = 100)
     var uuid: String? = null,
 
-    @Column(name = "kick_staff", nullable = false, length = 30)
+    @Column(name = "staff", nullable = false, length = 30)
     var kickStaff: String? = null,
 
-    @Column(name = "kick_reason", length = 100)
+    @Column(name = "reason", length = 100)
     var kickReason: String? = null,
 
-    @Column(name = "kick_server", nullable = false, length = 30)
+    @Column(name = "server", nullable = false, length = 30)
     var kickServer: String? = null,
 
     @ColumnDefault("current_timestamp()")
-    @Column(name = "kick_date", nullable = false)
+    @Column(name = "date", nullable = false)
     var kickDate: Instant? = null
 ){}

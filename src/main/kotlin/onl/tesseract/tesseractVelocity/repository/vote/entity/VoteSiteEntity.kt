@@ -6,13 +6,13 @@ import onl.tesseract.tesseractVelocity.domain.vote.VoteSite
 open class VoteSiteEntity(
     @Id
     @Column(name = "service_name", nullable = false)
-    open var serviceName: String,
+    open var serviceName: String = "",
 
     @Column(name = "address", nullable = false)
-    open var address: String,
+    open var address: String = "",
 
     @Column(name = "delay_minutes", nullable = false)
-    open var delayMinutes: Int
+    open var delayMinutes: Int = 0
 ) {
     fun toDomain(): VoteSite = VoteSite(serviceName, address, delayMinutes)
 }

@@ -15,7 +15,7 @@ class VoteService(private val voteRepository: VoteRepository) {
         var availableSite = 0
         voteRepository.getPlayerLastVotes(player.uniqueId).forEach {
                 val voteSite = it.service.toDomain()
-            if(Duration.between(it.date.plusSeconds(voteSite.delayMinutes*60L), Instant.now()).isNegative){
+            if(!Duration.between(it.date.plusSeconds(voteSite.delayMinutes*60L), Instant.now()).isNegative){
                 availableSite++
             }
         }

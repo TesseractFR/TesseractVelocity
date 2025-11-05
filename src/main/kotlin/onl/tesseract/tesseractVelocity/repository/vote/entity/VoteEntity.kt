@@ -3,8 +3,10 @@ package onl.tesseract.tesseractVelocity.repository.vote.entity
 import VoteSiteEntity
 import jakarta.persistence.*
 import onl.tesseract.tesseractVelocity.domain.vote.Vote
+import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
+import org.hibernate.type.SqlTypes
 import toEntity
 import java.time.Instant
 import java.util.UUID
@@ -17,16 +19,17 @@ open class VoteEntity (
     @Column(name = "id", nullable = false)
     open var id: Int = 0,
 
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "player_uuid", nullable = false, length = 36)
-    open var playerUuid: UUID,
+    open var playerUuid: UUID = UUID.randomUUID(),
 
     @Column(name = "date", nullable = false)
-    open var date: Instant,
+    open var date: Instant = Instant.now(),
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "service_name", nullable = false)
-    open var service: VoteSiteEntity
+    open var service: VoteSiteEntity = VoteSiteEntity()
 ){
 
 }

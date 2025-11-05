@@ -12,42 +12,42 @@ import java.time.Instant
 @Table(name = "t_admin_mute")
 data class MuteEntity(
     @Id
-    @Column(name = "mute_id", nullable = false)
+    @Column(name = "id", nullable = false)
     var id: Int? = null,
 
-    @Column(name = "UUID", length = 100)
+    @Column(name = "uuid", length = 100)
     var uuid: String? = null,
 
-    @Column(name = "mute_ip", length = 50)
+    @Column(name = "ip", length = 50)
     var muteIp: String? = null,
 
-    @Column(name = "mute_staff", nullable = false, length = 30)
+    @Column(name = "staff", nullable = false, length = 30)
     var muteStaff: String? = null,
 
-    @Column(name = "mute_reason", length = 100)
+    @Column(name = "reason", length = 100)
     var muteReason: String? = null,
 
-    @Column(name = "mute_server", nullable = false, length = 30)
+    @Column(name = "server", nullable = false, length = 30)
     var muteServer: String? = null,
 
     @ColumnDefault("current_timestamp()")
-    @Column(name = "mute_begin", nullable = false)
+    @Column(name = "begin", nullable = false)
     var muteBegin: Instant? = null,
 
-    @Column(name = "mute_end")
+    @Column(name = "end")
     var muteEnd: Instant? = null,
 
     @ColumnDefault("1")
-    @Column(name = "mute_state", nullable = false)
+    @Column(name = "state", nullable = false)
     var muteState: Boolean? = false,
 
-    @Column(name = "mute_unmutedate")
+    @Column(name = "unmutedate")
     var muteUnmutedate: Instant? = null,
 
-    @Column(name = "mute_unmutestaff", length = 30)
+    @Column(name = "unmutestaff", length = 30)
     var muteUnmutestaff: String? = null,
 
-    @Column(name = "mute_unmutereason", length = 100)
+    @Column(name = "unmutereason", length = 100)
     var muteUnmutereason: String? = null,
 ) {
     fun toModel(): Mute? {

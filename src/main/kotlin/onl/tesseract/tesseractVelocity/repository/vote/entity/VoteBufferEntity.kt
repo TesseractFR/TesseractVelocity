@@ -23,8 +23,8 @@ open class VoteBufferEntity(
     @Column(name = "date", nullable = false)
     open var date: Instant = Instant.now(),
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "service_name", nullable = false)
-    open var serviceName: VoteSiteEntity
+    open var serviceName: VoteSiteEntity = VoteSiteEntity()
 )

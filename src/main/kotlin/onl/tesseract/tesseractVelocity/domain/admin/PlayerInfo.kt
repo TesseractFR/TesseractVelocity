@@ -8,5 +8,5 @@ data class PlayerInfo(
     val name: String,
     val lastIp: String,
     val firstJoin: Instant,
-    val lastSeen: Instant
+    var lastSeen: Instant
 )

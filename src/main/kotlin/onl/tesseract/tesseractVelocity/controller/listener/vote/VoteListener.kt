@@ -2,6 +2,7 @@ package onl.tesseract.tesseractVelocity.controller.listener.vote
 
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.connection.LoginEvent
+import com.velocitypowered.api.event.connection.PostLoginEvent
 import com.velocitypowered.api.proxy.Player
 import com.vexsoftware.votifier.velocity.event.VotifierEvent
 import net.kyori.adventure.text.Component
@@ -14,12 +15,16 @@ import java.time.Instant
 
 class VoteListener(private val voteService: VoteService) {
     @Subscribe
-    fun onLogin(event: LoginEvent) {
+    fun onLogin(event: PostLoginEvent) {
         println("[VOTE] LoginEvent capté pour ${event.player.username}")
         val player = event.player
         notifyBuffered(player)
         val votes = voteService.getCanVoteNumber(player)
-
+        player.sendMessage(
+            Component.text("[Vote] ", NamedTextColor.GOLD)
+                    .append("Vous pouvez de nouveau voter sur ", NamedTextColor.YELLOW)
+                    .append(votes, NamedTextColor.GREEN)
+                    .append(" sites de vote.",NamedTextColor.YELLOW))
     }
 
     @Subscribe

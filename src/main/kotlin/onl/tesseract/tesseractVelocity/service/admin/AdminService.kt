@@ -4,6 +4,7 @@ import com.velocitypowered.api.proxy.Player
 import net.kyori.adventure.text.Component
 import onl.tesseract.tesseractVelocity.domain.admin.*
 import onl.tesseract.tesseractVelocity.repository.admin.AdminRepository
+import onl.tesseract.tesseractVelocity.repository.admin.entity.toEntity
 import java.net.InetSocketAddress
 import java.time.Duration
 import java.time.Instant
@@ -276,5 +277,12 @@ class AdminService(val adminRepository: AdminRepository, private val server: com
             duration.toMinutes() >= 1 -> "${duration.toMinutes()} minutes"
             else -> "${duration.seconds} secondes"
         }
+    }
+    fun getPlayerInfo(uuid: UUID): PlayerInfo? {
+        return adminRepository.findPlayerByUuid(uuid)?.toModel()
+    }
+
+    fun updatePlayer(playerInfo: PlayerInfo) {
+        adminRepository.updatePlayer(playerInfo.toEntity())
     }
 }

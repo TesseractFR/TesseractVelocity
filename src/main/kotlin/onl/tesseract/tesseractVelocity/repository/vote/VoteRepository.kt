@@ -10,7 +10,7 @@ import java.util.*
 class VoteRepository {
     fun getPlayerBuffer(playerName: String): List<VoteBufferEntity> {
         return Hibernate.inTransaction { session ->
-            session.createQuery("FROM VoteBufferEntity WHERE pseudo = :playerName", VoteBufferEntity::class.java)
+            session.createQuery("FROM VoteBufferEntity ve JOIN FETCH ve.serviceName WHERE ve.pseudo = :playerName", VoteBufferEntity::class.java)
                     .apply {
                         setParameter("playerName", playerName)
                     }
@@ -31,7 +31,7 @@ class VoteRepository {
     fun getPlayerLastVotes(playerUuid: UUID): List<VoteEntity> {
         return Hibernate.inTransaction { session ->
             session.createQuery(
-                "FROM VoteEntity v WHERE v.playerUuid = :playerUuid AND v.date = (" +
+                "SELECT v FROM VoteEntity v JOIN FETCH v.service WHERE v.playerUuid = :playerUuid AND v.date = (" +
                         "SELECT MAX(v2.date) FROM VoteEntity v2 WHERE v2.playerUuid = v.playerUuid AND v2.service = v.service" +
                         ")", VoteEntity::class.java)
                     .apply {
@@ -57,12 +57,13 @@ class VoteRepository {
 
     fun addPoint(playerUUID: UUID) {
         Hibernate.inTransaction { session ->
-            session.createQuery("INSERT INTO VotePointEntity (playerUuid, amount) VALUES (:playerUuid, 1) " +
-                    "ON CONFLICT DO UPDATE SET amount = amount + 1", VotePointEntity::class.java)
+            session.createNativeQuery("INSERT INTO t_vote_points (player_uuid, amount) VALUES (:playerUuid, 1) " +
+                    "ON DUPLICATE KEY UPDATE amount = amount + 1", VotePointEntity::class.java)
                     .setParameter("playerUuid",playerUUID)
                     .executeUpdate()
             }
         }
+
 
     fun getVoteService(serviceName: String): VoteSiteEntity {
         return Hibernate.inTransaction { session ->

@@ -283,4 +283,16 @@ class AdminRepository() {
             false
         }
     }
+
+    fun updatePlayer(playerEntity: PlayerEntity) {
+        Hibernate.inTransaction { session ->
+            session.merge(playerEntity)
+        }
+    }
+
+    fun findPlayerByUuid(uuid: UUID) : PlayerEntity?{
+        return Hibernate.inTransaction { session ->
+            session.find(PlayerEntity::class.java,uuidToString(uuid))
+        }
+    }
 }
