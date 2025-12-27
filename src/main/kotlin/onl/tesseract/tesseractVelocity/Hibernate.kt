@@ -1,7 +1,7 @@
 package onl.tesseract.tesseractVelocity
 
+import VoteSiteEntity
 import onl.tesseract.tesseractVelocity.config.DatabaseConfig
-import onl.tesseract.tesseractVelocity.domain.vote.VotePoint
 import onl.tesseract.tesseractVelocity.repository.admin.entity.BanEntity
 import onl.tesseract.tesseractVelocity.repository.admin.entity.KickEntity
 import onl.tesseract.tesseractVelocity.repository.admin.entity.MuteEntity
@@ -17,6 +17,14 @@ object Hibernate {
     lateinit var sessionFactory: SessionFactory
 
     fun init(config: DatabaseConfig) {
+        if (this::sessionFactory.isInitialized && sessionFactory.isOpen) {
+            try {
+                sessionFactory.close()
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
+        }
+
         val registry = StandardServiceRegistryBuilder()
                 .applySetting("hibernate.connection.driver_class", config.driver)
                 .applySetting("hibernate.connection.url", config.url)
