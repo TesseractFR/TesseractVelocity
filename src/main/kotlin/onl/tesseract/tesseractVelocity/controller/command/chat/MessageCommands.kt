@@ -4,6 +4,9 @@ import com.mojang.brigadier.Command
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
+import com.mojang.brigadier.context.CommandContext
+import com.mojang.brigadier.suggestion.Suggestions
+import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import com.velocitypowered.api.command.BrigadierCommand
 import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.proxy.Player
@@ -13,6 +16,7 @@ import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.format.NamedTextColor
 import java.util.*
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 
 class MessageCommands(private val proxy: ProxyServer) {
@@ -33,6 +37,7 @@ class MessageCommands(private val proxy: ProxyServer) {
         return literal<CommandSource>("message")
             .requires { it.hasPermission("tesseract.bungee.message") }
             .then(argument<CommandSource, String>("player", StringArgumentType.word())
+                .suggests(::playerSuggestions)
                 .then(argument<CommandSource, String>("message", StringArgumentType.greedyString()).executes { ctx ->
                     val src = ctx.source
                     if (src !is Player) return@executes Command.SINGLE_SUCCESS
@@ -95,5 +100,17 @@ class MessageCommands(private val proxy: ProxyServer) {
 
         sender.sendMessage(toText)
         receiver.sendMessage(fromText)
+    }
+
+    private fun playerSuggestions(
+        ctx: CommandContext<CommandSource>,
+        builder: SuggestionsBuilder
+    ): CompletableFuture<Suggestions> {
+        proxy.allPlayers
+                .map { it.username }
+                .filter { it.startsWith(builder.remaining, ignoreCase = true) }
+                .forEach { builder.suggest(it) }
+
+        return builder.buildFuture()
     }
 }
