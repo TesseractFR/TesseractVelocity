@@ -1,6 +1,7 @@
-package commands
+package onl.tesseract.tesseractVelocity.controller.command.chat
 
 import com.mojang.brigadier.Command
+import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.velocitypowered.api.command.BrigadierCommand
 import com.velocitypowered.api.command.CommandSource
@@ -8,11 +9,9 @@ import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.ProxyServer
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
-import java.util.*
-import java.util.concurrent.TimeUnit
-
 import onl.tesseract.tesseractVelocity.TesseractVelocity
 import java.time.Duration
+import java.util.*
 
 class ServerCommands(private val proxy: ProxyServer, private val plugin: TesseractVelocity) {
 
@@ -27,9 +26,9 @@ class ServerCommands(private val proxy: ProxyServer, private val plugin: Tessera
         }
     }
 
-    private fun buildServerCommand(name: String): com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSource> {
+    private fun buildServerCommand(name: String): LiteralArgumentBuilder<CommandSource> {
         return literal<CommandSource>(name)
-            .requires { it.hasPermission("tesseract.bungee.server.lobby") }
+            .requires { it.hasPermission("tesseract.bungee.server.$name") }
             .executes { ctx ->
                 val src = ctx.source
                 if (src !is Player) return@executes Command.SINGLE_SUCCESS
