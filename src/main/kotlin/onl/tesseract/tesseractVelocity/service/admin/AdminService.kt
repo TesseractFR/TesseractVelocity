@@ -54,7 +54,7 @@ class AdminService(val adminRepository: AdminRepository, private val server: com
         staff: String?
     ): Boolean {
         val playerUUID: UUID? = when (target) {
-            is BanTarget.Player -> target.player.uniqueId
+            is BanTarget.Player -> target.playerUUID
             else -> null
         }
         val ip: String? = when (target) {
@@ -94,7 +94,7 @@ class AdminService(val adminRepository: AdminRepository, private val server: com
         staff : String?
     ): Boolean {
         val playerUUID: UUID? = when (target) {
-            is BanTarget.Player -> target.player.uniqueId
+            is BanTarget.Player -> target.playerUUID
             else -> null
         }
         val ip: String? = when (target) {
@@ -123,7 +123,9 @@ class AdminService(val adminRepository: AdminRepository, private val server: com
             when (target) {
                 // Si c'est un joueur spécifique qui est banni
                 is BanTarget.Player -> {
-                    target.player.disconnect(banMessage)
+                    this.server.getPlayer(target.playerUUID).ifPresent {
+                        it.disconnect(banMessage)
+                    }
                 }
 
                 // Si c'est une IP qui est bannie
@@ -148,7 +150,7 @@ class AdminService(val adminRepository: AdminRepository, private val server: com
         staff: String?
     ): Boolean {
         val playerUUID: UUID? = when (target) {
-            is BanTarget.Player -> target.player.uniqueId
+            is BanTarget.Player -> target.playerUUID
             else -> null
         }
         val ip: String? = when (target) {
@@ -190,7 +192,7 @@ class AdminService(val adminRepository: AdminRepository, private val server: com
 
     fun unmute(target: BanTarget, reason: String?, server: String?, staff: String?): Boolean {
         val playerUUID: UUID? = when (target) {
-            is BanTarget.Player -> target.player.uniqueId
+            is BanTarget.Player -> target.playerUUID
             else -> null
         }
         val ip: String? = when (target) {
@@ -224,12 +226,14 @@ class AdminService(val adminRepository: AdminRepository, private val server: com
         val kickServer = server ?: "(global)"
         return when (target) {
             is BanTarget.Player -> {
-                val uuid = target.player.uniqueId
+                val uuid = target.playerUUID
                 val ok = adminRepository.insertKick(uuid, staff ?: "Console", reason, kickServer)
                 if (ok) {
-                    target.player.disconnect(Component.text("§cExpulsé: ${reason ?: "Aucune raison"}"))
-                    notifyStaff(Component.text("§d[STAFF] §eKick §7| §b${uuid} §7| §f${kickServer} §7| Raison: §f${reason ?: "-"} §7| Par: §f${staff ?: "Console"}"))
-                }
+                    this.server.getPlayer(target.playerUUID).ifPresent {
+                        it.disconnect(Component.text("§cExpulsé: ${reason ?: "Aucune raison"}"))
+                        notifyStaff(Component.text("§d[STAFF] §eKick §7| §b${uuid} §7| §f${kickServer} §7| Raison: §f${reason ?: "-"} §7| Par: §f${staff ?: "Console"}"))
+                    }
+                  }
                 ok
             }
             is BanTarget.Ip -> {
@@ -292,5 +296,9 @@ class AdminService(val adminRepository: AdminRepository, private val server: com
 
     fun updatePlayer(playerInfo: PlayerInfo) {
         adminRepository.updatePlayer(playerInfo.toEntity())
+    }
+
+    fun getPlayers(prefix: String? = null): List<PlayerInfo> {
+        return adminRepository.getAllPlayers(prefix)
     }
 }
