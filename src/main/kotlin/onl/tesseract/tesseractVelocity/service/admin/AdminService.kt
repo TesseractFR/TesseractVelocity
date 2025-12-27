@@ -3,6 +3,7 @@ package onl.tesseract.tesseractVelocity.service.admin
 import com.velocitypowered.api.proxy.Player
 import net.kyori.adventure.text.Component
 import onl.tesseract.tesseractVelocity.domain.admin.*
+import onl.tesseract.tesseractVelocity.domain.admin.cache.CachedMute
 import onl.tesseract.tesseractVelocity.repository.admin.AdminRepository
 import onl.tesseract.tesseractVelocity.repository.admin.entity.toEntity
 import java.net.InetSocketAddress
@@ -11,6 +12,8 @@ import java.time.Instant
 import java.util.*
 
 class AdminService(val adminRepository: AdminRepository, private val server: com.velocitypowered.api.proxy.ProxyServer) {
+
+    val cachedMutes = mutableMapOf<String, CachedMute>()
 
     private fun notifyStaff(message: Component) {
         if (!onl.tesseract.tesseractVelocity.config.Config.broadcastStaff) return
@@ -27,7 +30,12 @@ class AdminService(val adminRepository: AdminRepository, private val server: com
     }
 
     fun getActiveMute(playeruuid: UUID?, ip: String? = null, server: String?): Mute? {
-        return adminRepository.getActiveMute(playeruuid, ip, server)
+        val key = playeruuid?.toString() ?: ip!!
+        val cachedMute : CachedMute? = cachedMutes[key]
+        if(cachedMute!=null && cachedMute.isValid)return cachedMute.mute
+        val mute : Mute? = adminRepository.getActiveMute(playeruuid,ip,server)
+        cachedMutes[key] = CachedMute(Instant.now().plusSeconds(60*60),mute)
+        return mute
     }
 
     fun getActiveBan(player: Player, server: String?) : Ban?{
@@ -67,7 +75,6 @@ class AdminService(val adminRepository: AdminRepository, private val server: com
             muteEnd = duration?.let { Instant.now().plus(it) },
             muteState = true
         )
-
         val ok = adminRepository.insertMute(mute)
         if (ok) {
             val scope = if (server == null) "global" else "serveur $server"
@@ -75,6 +82,7 @@ class AdminService(val adminRepository: AdminRepository, private val server: com
             val who = playerUUID?.toString() ?: (ip ?: "?")
             notifyStaff(Component.text("§d[STAFF] §fMute$temp §7| §b$who §7| §f$scope §7| Raison: §f$reason §7| Par: §f${staff ?: "Console"}"))
         }
+        cachedMutes.clear()
         return ok
     }
 
