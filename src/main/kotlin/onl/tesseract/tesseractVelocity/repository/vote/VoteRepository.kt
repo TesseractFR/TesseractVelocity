@@ -59,7 +59,7 @@ class VoteRepository {
         Hibernate.inTransaction { session ->
             session.createNativeQuery("INSERT INTO t_vote_points (player_uuid, amount) VALUES (:playerUuid, 1) " +
                     "ON DUPLICATE KEY UPDATE amount = amount + 1", VotePointEntity::class.java)
-                    .setParameter("playerUuid",playerUUID)
+                    .setParameter("playerUuid",playerUUID.toString())
                     .executeUpdate()
             }
         }

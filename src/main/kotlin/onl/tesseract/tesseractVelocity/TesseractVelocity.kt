@@ -14,7 +14,7 @@ import commands.AltsCommands
 import commands.ReloadCommands
 import commands.StaffChatCommands
 import commands.GlobalChatCommands
-import commands.ServerCommands
+import onl.tesseract.tesseractVelocity.controller.command.chat.ServerCommands
 import commands.MessageCommands
 import onl.tesseract.tesseractVelocity.command.LookupCommandHandler
 import onl.tesseract.tesseractVelocity.config.Config

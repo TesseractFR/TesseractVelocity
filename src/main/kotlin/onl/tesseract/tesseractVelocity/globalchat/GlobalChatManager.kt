@@ -11,8 +11,7 @@ object GlobalChatManager {
     private val enabledGlobalChats: MutableSet<UUID> = HashSet()
 
     private val PREFIX: Component = Component.text("[", NamedTextColor.DARK_PURPLE)
-        .decorate(TextDecoration.BOLD)
-        .append(Component.text("Global", NamedTextColor.LIGHT_PURPLE))
+        .append(Component.text("Global", NamedTextColor.LIGHT_PURPLE,TextDecoration.BOLD))
         .append(Component.text("]", NamedTextColor.DARK_PURPLE).decorate(TextDecoration.BOLD))
         .append(Component.text(" ", NamedTextColor.GRAY))
 
