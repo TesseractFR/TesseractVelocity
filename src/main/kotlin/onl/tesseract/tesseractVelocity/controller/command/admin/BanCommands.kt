@@ -7,6 +7,8 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import com.mojang.brigadier.context.CommandContext
+import com.mojang.brigadier.suggestion.Suggestions
+import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import com.velocitypowered.api.command.BrigadierCommand
 import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.proxy.Player
@@ -17,6 +19,7 @@ import onl.tesseract.tesseractVelocity.service.admin.AdminService
 import onl.tesseract.tesseractVelocity.utils.TimeParser
 import onl.tesseract.tesseractVelocity.utils.IpUtil
 import java.time.Duration
+import java.util.concurrent.CompletableFuture
 
 class BanCommands(
     private val proxy: ProxyServer,
@@ -50,12 +53,17 @@ class BanCommands(
             proxy.commandManager.metaBuilder("gunban").build(),
             BrigadierCommand(buildGunban())
         )
+        proxy.commandManager.register(
+            proxy.commandManager.metaBuilder("unban").build(),
+            BrigadierCommand(buildUnban())
+        )
     }
 
     private fun buildGban(): LiteralArgumentBuilder<CommandSource> {
         return literal<CommandSource>("gban")
                 .requires { it.hasPermission("tesseract.admin.gban") }
                 .then(argument<CommandSource, String>("target", word())
+                        .suggests(::playerSuggestions)
                         .then(argument<CommandSource, String>("reason", greedyString())
                                 .executes { ctx ->
                                     executeBan(ctx, global = true, temporary = false)
@@ -66,6 +74,7 @@ class BanCommands(
         return literal<CommandSource>("gtempban")
                 .requires { it.hasPermission("tesseract.admin.gtempban") }
                 .then(argument<CommandSource, String>("target", word())
+                        .suggests(::playerSuggestions)
                         .then(argument<CommandSource, String>("time", word())
                                 .then(argument<CommandSource, String>("reason", greedyString())
                                         .executes { ctx ->
@@ -77,6 +86,7 @@ class BanCommands(
         return literal<CommandSource>("ban")
                 .requires { it.hasPermission("tesseract.admin.ban") }
                 .then(argument<CommandSource, String>("target", word())
+                        .suggests(::playerSuggestions)
                         .then(argument<CommandSource, String>("reason", greedyString())
                                 .executes { ctx ->
                                     executeBan(ctx, global = false, temporary = false)
@@ -87,6 +97,7 @@ class BanCommands(
         return literal<CommandSource>("tempban")
                 .requires { it.hasPermission("tesseract.admin.tempban") }
                 .then(argument<CommandSource, String>("target", word())
+                        .suggests(::playerSuggestions)
                         .then(argument<CommandSource, String>("time", word())
                                 .then(argument<CommandSource, String>("reason", greedyString())
                                         .executes { ctx ->
@@ -98,9 +109,21 @@ class BanCommands(
         return literal<CommandSource>("gunban")
                 .requires { it.hasPermission("tesseract.admin.gunban") }
                 .then(argument<CommandSource, String>("target", word())
+                        .suggests(::playerSuggestions)
                         .then(argument<CommandSource, String>("reason", greedyString())
                                 .executes { ctx ->
                                     executeUnban(ctx, global = true)
+                                }))
+    }
+
+    private fun buildUnban(): LiteralArgumentBuilder<CommandSource> {
+        return literal<CommandSource>("unban")
+                .requires { it.hasPermission("tesseract.admin.unban") }
+                .then(argument<CommandSource, String>("target", word())
+                        .suggests(::playerSuggestions)
+                        .then(argument<CommandSource, String>("reason", greedyString())
+                                .executes { ctx ->
+                                    executeUnban(ctx, global = false)
                                 }))
     }
 
@@ -195,8 +218,22 @@ class BanCommands(
 
     private fun resolveTarget(proxy: ProxyServer, input: String): BanTarget? {
         if (IpUtil.isValidIPv4(input)) return BanTarget.Ip(input)
-        val player = proxy.getPlayer(input).orElse(null)
+
+        val player = proxy.getPlayer(input).orElse(null)?.uniqueId ?:adminService.getPlayerInfo(input)?.uuid
         return if (player != null) BanTarget.Player(player) else null
+    }
+
+
+    private fun playerSuggestions(
+        ctx: CommandContext<CommandSource>,
+        builder: SuggestionsBuilder
+    ): CompletableFuture<Suggestions> {
+        adminService.getPlayers(builder.remaining)
+                .map { it.name }
+                .filter { it.startsWith(builder.remaining, ignoreCase = true) }
+                .forEach { builder.suggest(it) }
+
+        return builder.buildFuture()
     }
 
 }

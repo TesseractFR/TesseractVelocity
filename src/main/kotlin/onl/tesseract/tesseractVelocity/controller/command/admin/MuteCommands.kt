@@ -7,6 +7,8 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import com.mojang.brigadier.context.CommandContext
+import com.mojang.brigadier.suggestion.Suggestions
+import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import com.velocitypowered.api.command.BrigadierCommand
 import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.proxy.Player
@@ -17,6 +19,7 @@ import onl.tesseract.tesseractVelocity.service.admin.AdminService
 import onl.tesseract.tesseractVelocity.utils.TimeParser
 import onl.tesseract.tesseractVelocity.utils.IpUtil
 import java.time.Duration
+import java.util.concurrent.CompletableFuture
 
 class MuteCommands(
     private val proxy: ProxyServer,
@@ -54,6 +57,7 @@ class MuteCommands(
         return literal<CommandSource>("gmute")
             .requires { it.hasPermission("tesseract.admin.gmute") }
             .then(argument<CommandSource, String>("target", word())
+                    .suggests(::playerSuggestions)
                 .then(argument<CommandSource, String>("reason", greedyString())
                     .executes { ctx ->
                         executeMute(ctx, global = true, temporary = false)
@@ -66,6 +70,7 @@ class MuteCommands(
         return literal<CommandSource>("gtempmute")
             .requires { it.hasPermission("tesseract.admin.gtempmute") }
             .then(argument<CommandSource, String>("target", word())
+                    .suggests(::playerSuggestions)
                 .then(argument<CommandSource, String>("time", word())
                     .then(argument<CommandSource, String>("reason", greedyString())
                         .executes { ctx ->
@@ -80,6 +85,7 @@ class MuteCommands(
         return literal<CommandSource>("mute")
             .requires { it.hasPermission("tesseract.admin.mute") }
             .then(argument<CommandSource, String>("target", word())
+                    .suggests(::playerSuggestions)
                 .then(argument<CommandSource, String>("reason", greedyString())
                     .executes { ctx ->
                         executeMute(ctx, global = false, temporary = false)
@@ -92,6 +98,7 @@ class MuteCommands(
         return literal<CommandSource>("tempmute")
             .requires { it.hasPermission("tesseract.admin.tempmute") }
             .then(argument<CommandSource, String>("target", word())
+                    .suggests(::playerSuggestions)
                 .then(argument<CommandSource, String>("time", word())
                     .then(argument<CommandSource, String>("reason", greedyString())
                         .executes { ctx ->
@@ -106,6 +113,7 @@ class MuteCommands(
         return literal<CommandSource>("gunmute")
             .requires { it.hasPermission("tesseract.admin.gunmute") }
             .then(argument<CommandSource, String>("target", word())
+                    .suggests(::playerSuggestions)
                 .then(argument<CommandSource, String>("reason", greedyString())
                     .executes { ctx ->
                         executeUnmute(ctx, global = true)
@@ -118,6 +126,7 @@ class MuteCommands(
         return literal<CommandSource>("unmute")
             .requires { it.hasPermission("tesseract.admin.unmute") }
             .then(argument<CommandSource, String>("target", word())
+                    .suggests(::playerSuggestions)
                 .then(argument<CommandSource, String>("reason", greedyString())
                     .executes { ctx ->
                         executeUnmute(ctx, global = false)
@@ -226,5 +235,17 @@ class MuteCommands(
         if (IpUtil.isValidIPv4(input)) return BanTarget.Ip(input)
         val player = proxy.getPlayer(input).orElse(null)?.uniqueId?:adminService.getPlayerInfo(input)?.uuid
         return if (player != null) BanTarget.Player(player) else null
+    }
+
+    private fun playerSuggestions(
+        ctx: CommandContext<CommandSource>,
+        builder: SuggestionsBuilder
+    ): CompletableFuture<Suggestions> {
+        adminService.getPlayers(builder.remaining)
+                .map { it.name }
+                .filter { it.startsWith(builder.remaining, ignoreCase = true) }
+                .forEach { builder.suggest(it) }
+
+        return builder.buildFuture()
     }
 }

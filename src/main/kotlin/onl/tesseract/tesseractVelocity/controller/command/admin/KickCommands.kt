@@ -7,6 +7,8 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import com.mojang.brigadier.context.CommandContext
+import com.mojang.brigadier.suggestion.Suggestions
+import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import com.velocitypowered.api.command.BrigadierCommand
 import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.proxy.Player
@@ -15,6 +17,7 @@ import net.kyori.adventure.text.Component
 import onl.tesseract.tesseractVelocity.domain.admin.BanTarget
 import onl.tesseract.tesseractVelocity.service.admin.AdminService
 import onl.tesseract.tesseractVelocity.utils.IpUtil
+import java.util.concurrent.CompletableFuture
 
 class KickCommands(
     private val proxy: ProxyServer,
@@ -35,6 +38,7 @@ class KickCommands(
         return literal<CommandSource>("gkick")
             .requires { it.hasPermission("tesseract.admin.gkick") }
             .then(argument<CommandSource, String>("target", word())
+                    .suggests(::playerSuggestions)
                 .then(argument<CommandSource, String>("reason", greedyString())
                     .executes { ctx ->
                         executeKick(ctx, global = true)
@@ -47,6 +51,7 @@ class KickCommands(
         return literal<CommandSource>("kick")
             .requires { it.hasPermission("tesseract.admin.kick") }
             .then(argument<CommandSource, String>("target", word())
+                    .suggests(::playerSuggestions)
                 .then(argument<CommandSource, String>("reason", greedyString())
                     .executes { ctx ->
                         executeKick(ctx, global = false)
@@ -92,5 +97,15 @@ class KickCommands(
         return if (player != null) BanTarget.Player(player.uniqueId) else null
     }
 
+    private fun playerSuggestions(
+        ctx: CommandContext<CommandSource>,
+        builder: SuggestionsBuilder
+    ): CompletableFuture<Suggestions> {
+        proxy.allPlayers
+                .map { it.username }
+                .filter { it.startsWith(builder.remaining, ignoreCase = true) }
+                .forEach { builder.suggest(it) }
+
+        return builder.buildFuture()
     }
 }
