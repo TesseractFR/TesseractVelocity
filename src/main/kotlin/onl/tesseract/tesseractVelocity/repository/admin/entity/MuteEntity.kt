@@ -2,10 +2,14 @@ package onl.tesseract.tesseractVelocity.repository.admin.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import onl.tesseract.tesseractVelocity.domain.admin.Mute
 import org.hibernate.annotations.ColumnDefault
+import org.hibernate.annotations.JdbcTypeCode
+import java.sql.Types
 import java.time.Instant
 
 @Entity
@@ -13,9 +17,11 @@ import java.time.Instant
 data class MuteEntity(
     @Id
     @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Int? = null,
 
-    @Column(name = "uuid", length = 100)
+    @Column(name = "uuid", length = 36, columnDefinition = "VARCHAR(36)")
+    @JdbcTypeCode(Types.VARCHAR)
     var uuid: String? = null,
 
     @Column(name = "ip", length = 50)

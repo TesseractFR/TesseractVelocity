@@ -2,6 +2,8 @@ package onl.tesseract.tesseractVelocity.repository.admin.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import org.hibernate.annotations.ColumnDefault
@@ -12,6 +14,7 @@ import java.time.Instant
 data class KickEntity (
     @Id
     @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Int? = null,
 
     @Column(name = "uuid", nullable = false, length = 100)
