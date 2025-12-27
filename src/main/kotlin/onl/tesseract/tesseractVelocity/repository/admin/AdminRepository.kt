@@ -1,6 +1,7 @@
 package onl.tesseract.tesseractVelocity.repository.admin
 
 
+import com.velocitypowered.api.proxy.Player
 import onl.tesseract.tesseractVelocity.Hibernate
 import onl.tesseract.tesseractVelocity.domain.admin.Ban
 import onl.tesseract.tesseractVelocity.domain.admin.Mute
@@ -295,4 +296,23 @@ class AdminRepository() {
             session.find(PlayerEntity::class.java,uuidToString(uuid))
         }
     }
+
+    fun getAllPlayers(prefix: String? = null): List<PlayerInfo> {
+        return Hibernate.inTransaction { session ->
+            val query = if (prefix.isNullOrBlank()) {
+                session.createQuery(
+                    "SELECT p FROM PlayerEntity p",
+                    PlayerEntity::class.java
+                )
+            } else {
+                session.createQuery(
+                    "SELECT p FROM PlayerEntity p WHERE LOWER(p.batPlayer) LIKE :prefix",
+                    PlayerEntity::class.java
+                ).setParameter("prefix", prefix.lowercase() + "%")
+            }
+
+            query.resultList.map { it.toModel() }
+        }
+    }
+
 }

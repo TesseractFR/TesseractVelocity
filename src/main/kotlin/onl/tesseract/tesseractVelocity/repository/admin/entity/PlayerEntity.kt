@@ -1,5 +1,6 @@
 package onl.tesseract.tesseractVelocity.repository.admin.entity
 
+import jakarta.persistence.Cacheable
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
@@ -12,6 +13,7 @@ import java.time.Instant
 
 @Entity
 @Table(name = "t_admin_players")
+@Cacheable
 data class PlayerEntity (
     @Column(name = "name", nullable = false, length = 30)
     var batPlayer: String = "",
