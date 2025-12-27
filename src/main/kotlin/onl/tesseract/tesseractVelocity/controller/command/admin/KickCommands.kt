@@ -89,6 +89,8 @@ class KickCommands(
         // If IPv4, target IP; else try online player by name
         if (IpUtil.isValidIPv4(input)) return BanTarget.Ip(input)
         val player = proxy.getPlayer(input).orElse(null)
-        return if (player != null) BanTarget.Player(player) else null
+        return if (player != null) BanTarget.Player(player.uniqueId) else null
+    }
+
     }
 }

@@ -224,7 +224,7 @@ class MuteCommands(
 
     private fun resolveTarget(input: String): BanTarget? {
         if (IpUtil.isValidIPv4(input)) return BanTarget.Ip(input)
-        val player = proxy.getPlayer(input).orElse(null)
+        val player = proxy.getPlayer(input).orElse(null)?.uniqueId?:adminService.getPlayerInfo(input)?.uuid
         return if (player != null) BanTarget.Player(player) else null
     }
 }

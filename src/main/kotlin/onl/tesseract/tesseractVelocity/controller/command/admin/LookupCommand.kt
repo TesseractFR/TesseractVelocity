@@ -2,12 +2,16 @@ package onl.tesseract.tesseractVelocity.command
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.arguments.StringArgumentType
+import com.mojang.brigadier.context.CommandContext
+import com.mojang.brigadier.suggestion.Suggestions
+import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.command.BrigadierCommand
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor.*
 import onl.tesseract.tesseractVelocity.service.admin.AdminService
 import onl.tesseract.tesseractVelocity.utils.IpUtil
+import java.util.concurrent.CompletableFuture
 
 class LookupCommandHandler(
     private val adminService: AdminService
@@ -23,6 +27,7 @@ class LookupCommandHandler(
                                 handleLookup(source, target)
                                 1
                             }
+                            .suggests(::playerSuggestions)
                 )
                 .build()
 
@@ -102,4 +107,16 @@ class LookupCommandHandler(
 
         source.sendMessage(msg)
     }
+    private fun playerSuggestions(
+        ctx: CommandContext<CommandSource>,
+        builder: SuggestionsBuilder
+    ): CompletableFuture<Suggestions> {
+        adminService.getPlayers(builder.remaining)
+                .map { it.name }
+                .filter { it.startsWith(builder.remaining, ignoreCase = true) }
+                .forEach { builder.suggest(it) }
+
+        return builder.buildFuture()
+    }
+
 }
